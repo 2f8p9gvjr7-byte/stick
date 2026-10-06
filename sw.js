@@ -1,5 +1,5 @@
 // Garde l'appli disponible hors ligne. Changer CACHE à chaque nouvelle version.
-const CACHE = 'lire-anglais-v1.0';
+const CACHE = 'lire-anglais-v1.2';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

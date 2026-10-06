@@ -2,7 +2,7 @@
    la voix du téléphone, puis obtenir la traduction française.
    Aucune clé, aucun compte. Réglages gardés dans localStorage. */
 
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.2';
 const $ = (s) => document.querySelector(s);
 const store = {
   get(k, d) { try { const v = localStorage.getItem('lire.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -136,7 +136,8 @@ function stop() {
 $('#btn-play').addEventListener('click', () => {
   const list = sentences($('#src').value);
   if (!list.length) { status('Collez d\'abord un texte.'); return; }
-  status('');
+  status('Touchez un mot pour le réentendre seul.');
+  showSentences(list);
   playFrom(list, 0, 'en');
 });
 $('#btn-pause').addEventListener('click', () => {
@@ -202,13 +203,29 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function renderPairs(en) {
+// Chaque mot devient touchable : un appui le relit seul, plus lentement.
+function wordsHtml(sentence) {
+  return sentence.split(/([A-Za-zÀ-ÿ0-9]+(?:['’-][A-Za-zÀ-ÿ0-9]+)*)/).map((part, k) =>
+    k % 2 ? `<span class="w" data-w="${escapeHtml(part)}">${escapeHtml(part)}</span>` : escapeHtml(part)
+  ).join('');
+}
+
+function renderPairs(en, translating) {
   $('#pairs').innerHTML = en.map((s, i) => `
     <li class="pair" data-i="${i}">
-      <span class="en" lang="en">${escapeHtml(s)}</span>
+      <span class="en" lang="en">${wordsHtml(s)}</span>
       <button class="say" data-say="${i}" aria-label="Écouter cette phrase">🔊</button>
-      <span class="fr" lang="fr" data-fr="${i}">…</span>
+      <span class="fr" lang="fr" data-fr="${i}"${translating ? '' : ' hidden'}>…</span>
     </li>`).join('');
+}
+
+// Affiche les phrases (sans traduction) si le texte a changé.
+function showSentences(list) {
+  if (list.join('\n') === lastEn.join('\n')) return;
+  lastEn = list; lastFr = [];
+  renderPairs(list, false);
+  $('#full-fr').textContent = '';
+  $('#result').hidden = false;
 }
 
 $('#btn-translate').addEventListener('click', async () => {
@@ -216,7 +233,7 @@ $('#btn-translate').addEventListener('click', async () => {
   if (!en.length) { status('Collez d\'abord un texte.'); return; }
   if (!navigator.onLine) { status('Pas de réseau : la traduction a besoin d\'internet (la lecture, non).'); return; }
   lastEn = en; lastFr = [];
-  renderPairs(en);
+  renderPairs(en, true);
   $('#result').hidden = false;
   $('#btn-translate').disabled = true;
   let done = 0;
@@ -234,7 +251,21 @@ $('#btn-translate').addEventListener('click', async () => {
   store.set('last', $('#src').value);
 });
 
+function sayWord(el) {
+  stop();
+  document.querySelectorAll('.w.is-on').forEach((n) => n.classList.remove('is-on'));
+  el.classList.add('is-on');
+  const u = new SpeechSynthesisUtterance(el.dataset.w);
+  const v = currentVoice();
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+  u.rate = Math.min(+rateInput.value, 0.75);
+  u.onend = u.onerror = () => el.classList.remove('is-on');
+  synth.speak(u);
+}
+
 $('#pairs').addEventListener('click', (e) => {
+  const w = e.target.closest('.w');
+  if (w) { if (synth) sayWord(w); return; }
   const b = e.target.closest('[data-say]');
   if (!b) return;
   const i = +b.dataset.say;

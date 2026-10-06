@@ -1,4 +1,4 @@
-# Lire l'anglais — version 1.0
+# Lire l'anglais — version 1.2
 
 Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en français.
 
@@ -11,12 +11,14 @@ Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en franç
   - *Phrase par phrase* : chaque phrase anglaise avec sa traduction dessous et
     son propre bouton 🔊 pour la réécouter seule.
   - *Texte entier* : la traduction d'un bloc, à copier ou à écouter en français.
+- **Toucher un mot** : il est relu seul, plus lentement. Les phrases
+  s'affichent dès qu'on appuie sur Écouter, même sans traduire.
 - **Menu ⋯** : choix de la voix anglaise, vitesse, petite pause entre les phrases.
   Les réglages et le dernier texte sont gardés sur le téléphone.
 
 ## Pour une voix vraiment fluide (iPhone)
 
-Réglages → Accessibilité → Contenu énoncé → Voix → Anglais : téléchargez une
+Réglages → Accessibilité → Lire et énoncer → Voix → Anglais : téléchargez une
 voix « Améliorée » ou « Premium ». L'appli la place automatiquement en tête de liste.
 
 ## Traduction
@@ -34,6 +36,6 @@ L'icône est violette avec « En » et des ondes jaunes.
 
 ## Version
 
-Le numéro s'affiche dans le menu « ⋯ ». Il vit dans `APP_VERSION` (`app.js`) et
+Le numéro s'affiche en bas de l'écran. Il vit dans `APP_VERSION` (`app.js`) et
 dans le nom du cache (`sw.js`) ; les deux sont incrémentés à chaque correction.
 L'appli vérifie d'elle-même s'il existe une version plus récente et se recharge.

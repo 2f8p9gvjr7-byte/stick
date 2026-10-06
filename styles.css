@@ -97,4 +97,7 @@ select { font: inherit; padding: 8px; border-radius: 10px; border: 1px solid var
 input[type=range] { width: 100%; accent-color: var(--accent); }
 .check { display: flex; gap: 8px; align-items: center; font-size: 15px; }
 .hint { margin: 0; font-size: 14px; color: var(--muted); }
-.version { margin: 0; font-size: 13px; color: var(--muted); }
+.foot { text-align: center; font-size: 13px; color: var(--muted); padding: 18px 16px 4px; }
+
+.w { border-radius: 4px; padding: 0 1px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.w:active, .w.is-on { background: var(--accent); color: var(--accent-ink); }
