@@ -1,4 +1,4 @@
-# Lire l'anglais — version 2.0
+# Lire l'anglais — version 2.1
 
 Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en français.
 
@@ -15,7 +15,7 @@ Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en franç
   son sens en français (traduction principale, puis les sens par nature :
   nom, verbe…). « ‹ précédent / suivant › » étend la sélection aux mots
   voisins pour un groupe de mots. « ☆ Ajouter au carnet » le garde.
-- **Expressions idiomatiques** : environ 220 expressions courantes sont
+- **Expressions idiomatiques** : près de 480 expressions courantes sont
   reconnues, même conjuguées (*broke the ice*, *spilled the beans*…), et
   soulignées en pointillé orange. Les toucher affiche leur sens et les ajoute
   au carnet ; le soulignement devient alors plein. Liste dans `idioms.js`.
@@ -23,6 +23,9 @@ Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en franç
   🔊 pour réécouter, ✕ pour retirer (avec « Annuler »). « Cacher le français »
   floute les traductions pour réviser : touchez une fiche pour la dévoiler.
   « Sauvegarder le carnet » crée un fichier .json, « Restaurer » le relit.
+- **Vos expressions** : un groupe de mots gardé dans le carnet est ensuite
+  reconnu et souligné dans les textes suivants. ✎ (dans le carnet ou dans la
+  fiche) permet de corriger ou d'écrire son sens et d'ajouter une remarque.
 - **Menu ⋯** : choix de la voix anglaise, vitesse, petite pause entre les phrases.
   Les réglages et le dernier texte sont gardés sur le téléphone.
 

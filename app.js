@@ -2,7 +2,7 @@
    l'entendre et voir son sens, repérer les expressions idiomatiques et les
    garder dans un carnet. Aucune clé, aucun compte. Tout reste sur le téléphone. */
 
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 const $ = (s) => document.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const store = {
@@ -85,7 +85,10 @@ const IRREG = {
   say: 'say says said saying', lend: 'lend lends lent lending', stab: 'stab stabs stabbed stabbing',
   rub: 'rub rubs rubbed rubbing', bet: 'bet bets betting', flog: 'flog flogs flogged flogging',
   bury: 'bury buries buried burying', tie: 'tie ties tied tying', learn: 'learn learns learned learnt learning',
-  fly: 'fly flies flew flown flying', show: 'show shows showed shown showing'
+  fly: 'fly flies flew flown flying', show: 'show shows showed shown showing',
+  strike: 'strike strikes struck stricken striking', eat: 'eat eats ate eaten eating',
+  fan: 'fan fans fanned fanning', slip: 'slip slips slipped slipping', step: 'step steps stepped stepping',
+  stop: 'stop stops stopped stopping', plan: 'plan plans planned planning'
 };
 function verbForms(v) {
   if (IRREG[v]) return IRREG[v].split(' ');
@@ -155,14 +158,30 @@ function matchAt(pat, toks, pi, ti) {
   return p.opt ? matchAt(pat, toks, pi + 1, ti) : -1;
 }
 
-const IDS = IDIOMS.map(([d, p, fr, note], k) => ({ k, d, fr, note: note || '', pat: compile(p || d) }));
+const BASE_IDS = IDIOMS.map(([d, p, fr, note]) => ({ key: 'i:' + d.toLowerCase(), d, fr, note: note || '', pat: compile(p || d) }));
+let IDS = BASE_IDS;
+let userSig = '';
+
+// Les groupes de mots gardés dans le carnet sont reconnus à leur tour dans les textes suivants.
+function literalPattern(text) {
+  return tokensOf(parseSentence(text).words).map((t) => ({ k: 'seq', alts: [[t.t]], opt: false }));
+}
+function rebuildUserIdioms() {
+  const mine = carnet.filter((e) => e.kind === 'expr' && /\s/.test(e.en.trim()));
+  const sig = mine.map((e) => e.key).join('|');
+  if (sig === userSig) return false;
+  userSig = sig;
+  IDS = BASE_IDS.concat(mine.map((e) => ({ key: e.key, d: e.en, fr: e.fr, note: e.note || '', pat: literalPattern(e.en), user: true })));
+  return true;
+}
 
 function findIdioms(toks) {
   const found = [];
-  for (const id of IDS) {
+  for (let k = 0; k < IDS.length; k++) {
+    const id = IDS[k];
     for (let ti = 0; ti < toks.length; ti++) {
       const end = matchAt(id.pat, toks, 0, ti);
-      if (end > ti) { found.push({ k: id.k, a: toks[ti].w, b: toks[end - 1].w }); ti = end - 1; }
+      if (end > ti) { found.push({ k, a: toks[ti].w, b: toks[end - 1].w }); ti = end - 1; }
     }
   }
   found.sort((x, y) => (y.b - y.a) - (x.b - x.a) || x.a - y.a);
@@ -468,17 +487,17 @@ function highlightSel() {
 }
 
 function openWord(i, wi) {
-  sheet = { i, a: wi, b: wi, k: null };
+  sheet = { i, a: wi, b: wi, k: null, key: null };
   saySlow(SENT[i].words[wi].text);
   renderSheet();
 }
 
 function openIdiom(i, k, a, b) {
-  sheet = { i, a, b, k };
+  sheet = { i, a, b, k, key: IDS[k].key };
   saySlow(rangeText(i, a, b));
   const id = IDS[k];
-  if (!carnetHas(idiomKey(k))) {
-    carnetAdd({ key: idiomKey(k), en: id.d, seen: rangeText(i, a, b), fr: id.fr, note: id.note, ctx: SENT[i].text, kind: 'idiom' });
+  if (!carnetHas(id.key)) {
+    carnetAdd({ key: id.key, en: id.d, seen: rangeText(i, a, b), fr: id.fr, note: id.note, ctx: SENT[i].text, kind: 'idiom' });
     sheet.justAdded = true;
   }
   renderSheet();
@@ -505,12 +524,15 @@ function renderSheet() {
 
   if (isIdiom) {
     const id = IDS[sheet.k];
-    $('#sh-kind').textContent = 'Expression';
+    const mine = carnet.find((x) => x.key === id.key);   // sens éventuellement corrigé par vous
+    const fr = (mine && mine.fr) || id.fr;
+    const note = mine ? (mine.note || '') : id.note;
+    $('#sh-kind').textContent = id.user ? 'Votre expression' : 'Expression';
     $('#sh-canon').hidden = id.d.toLowerCase() === text.toLowerCase();
     $('#sh-canon').textContent = 'Forme de base : ' + id.d;
-    $('#sh-fr').innerHTML = `<p class="sh-main">${escapeHtml(id.fr)}</p>`;
-    $('#sh-note').hidden = !id.note;
-    $('#sh-note').textContent = id.note;
+    $('#sh-fr').innerHTML = fr ? `<p class="sh-main">${escapeHtml(fr)}</p>` : '<p class="sh-wait">Pas encore de sens : touchez « ✎ Modifier le sens ».</p>';
+    $('#sh-note').hidden = !note;
+    $('#sh-note').textContent = note;
   } else {
     $('#sh-kind').textContent = sheet.a === sheet.b ? 'Mot' : 'Groupe de mots';
     $('#sh-canon').hidden = true;
@@ -521,7 +543,9 @@ function renderSheet() {
       $('#sh-fr').innerHTML = '<p class="sh-wait">Recherche du sens…</p>';
       lookup(text).then((res) => {
         if (run !== sheetRun) return;
-        $('#sh-fr').innerHTML = `<p class="sh-main">${escapeHtml(res.main)}</p>` + res.groups.map((g) =>
+        const mine = carnet.find((x) => x.key === sheetKey() && x.edited);
+        $('#sh-fr').innerHTML = (mine ? `<p class="sh-mine">Votre sens : ${escapeHtml(mine.fr)}</p>` : '')
+          + `<p class="sh-main">${escapeHtml(res.main)}</p>` + res.groups.map((g) =>
           `<p class="sh-pos"><span>${escapeHtml(POS_FR[g.pos] || g.pos)}</span> ${escapeHtml(g.terms.join(', '))}</p>`).join('');
         // Gardé auparavant sans traduction (hors ligne) : on complète.
         const e = carnet.find((x) => x.key === sheetKey());
@@ -548,6 +572,7 @@ function updateSaveBtn() {
   const b = $('#sh-save');
   b.textContent = has ? (sheet.justAdded ? '✓ Ajoutée au carnet — retirer' : '✓ Dans le carnet — retirer') : '☆ Ajouter au carnet';
   b.classList.toggle('is-done', has);
+  $('#sh-edit').hidden = !has;
 }
 
 function closeSheet() {
@@ -571,6 +596,7 @@ $('#sh-save').addEventListener('click', () => {
   const text = rangeText(sheet.i, sheet.a, sheet.b);
   if (sheet.k !== null) {
     const id = IDS[sheet.k];
+    if (id.user) { carnetAdd({ key, en: id.d, fr: id.fr, note: id.note, ctx: SENT[sheet.i].text, kind: 'expr' }); updateSaveBtn(); return; }
     carnetAdd({ key, en: id.d, seen: text, fr: id.fr, note: id.note, ctx: SENT[sheet.i].text, kind: 'idiom' });
   } else {
     const res = lookCache.get(text.toLowerCase());
@@ -580,15 +606,29 @@ $('#sh-save').addEventListener('click', () => {
   updateSaveBtn();
 });
 
+$('#sh-edit').addEventListener('click', () => {
+  if (sheet && editEntry(sheetKey())) renderSheet();
+});
+
 /* =========================================================
    Carnet
    ========================================================= */
 let carnet = store.get('carnet', []);
-function idiomKey(k) { return 'i:' + IDS[k].d.toLowerCase(); }
+function idiomKey(k) { return IDS[k].key; }
 function carnetHas(key) { return carnet.some((e) => e.key === key); }
 
 function saveCarnet() {
   store.set('carnet', carnet);
+  if (rebuildUserIdioms() && lastEn.length) {
+    // Nouvelle expression à vous : on resouligne le texte, traductions comprises.
+    renderPairs(lastEn, lastFr.length > 0);
+    lastFr.forEach((t, i) => { const el = document.querySelector(`[data-fr="${i}"]`); if (el) el.textContent = t ?? '(échec — réessayez)'; });
+    if (sheet) {
+      sheet.k = sheet.key ? IDS.findIndex((x) => x.key === sheet.key) : -1;
+      if (sheet.k < 0) sheet.k = null;
+      highlightSel();
+    }
+  }
   $('#carnet-count').textContent = carnet.length ? `(${carnet.length})` : '';
   // Soulignement plein pour les expressions déjà gardées.
   $$('.idiom').forEach((n) => n.classList.toggle('is-saved', carnetHas(idiomKey(+n.dataset.k))));
@@ -609,6 +649,20 @@ function carnetRemove(key) {
   toast(`« ${lastRemoved.entry.en} » retiré du carnet.`, true);
 }
 
+// Corriger ou compléter le sens d'une entrée du carnet.
+function editEntry(key) {
+  const e = carnet.find((x) => x.key === key);
+  if (!e) return false;
+  const fr = prompt(`Sens en français de « ${e.en} » :`, e.fr || '');
+  if (fr === null) return false;
+  const note = prompt('Remarque (facultatif) :', e.note || '');
+  e.fr = fr.trim();
+  if (note !== null) e.note = note.trim();
+  e.edited = true;
+  saveCarnet();
+  return true;
+}
+
 const KIND = { idiom: 'Expression', word: 'Mot', expr: 'Groupe de mots' };
 function renderCarnet() {
   $('#carnet-empty').hidden = carnet.length > 0;
@@ -618,9 +672,10 @@ function renderCarnet() {
       <div class="c-head">
         <span class="c-en" lang="en">${escapeHtml(e.en)}</span>
         <button class="c-say" aria-label="Écouter">🔊</button>
+        <button class="c-edit" aria-label="Modifier le sens">✎</button>
         <button class="c-del" aria-label="Supprimer">✕</button>
       </div>
-      <div class="c-fr">${escapeHtml(e.fr || '(sens à rechercher : retouchez le mot avec du réseau)')}</div>
+      <div class="c-fr">${escapeHtml(e.fr || '(pas encore de sens : touchez ✎)')}</div>
       ${e.more ? `<div class="c-more">${escapeHtml(e.more)}</div>` : ''}
       ${e.note ? `<div class="c-note">${escapeHtml(e.note)}</div>` : ''}
       ${e.ctx ? `<div class="c-ctx" lang="en">« ${escapeHtml(e.ctx)} »</div>` : ''}
@@ -634,6 +689,7 @@ $('#carnet-list').addEventListener('click', (e) => {
   const entry = carnet.find((x) => x.key === li.dataset.key);
   if (!entry) return;
   if (e.target.closest('.c-del')) { carnetRemove(entry.key); return; }
+  if (e.target.closest('.c-edit')) { editEntry(entry.key); return; }
   if (e.target.closest('.c-say')) { saySlow((entry.seen || entry.en).replace(/…/g, '')); return; }
   li.classList.toggle('is-shown');   // en mode « cacher le français »
 });
