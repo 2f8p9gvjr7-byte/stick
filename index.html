@@ -20,6 +20,11 @@
     <button id="btn-menu" class="icon-btn" aria-label="Menu">⋯</button>
   </header>
 
+  <nav class="maintabs">
+    <button class="maintab is-on" data-page="lire">Lire</button>
+    <button class="maintab" data-page="carnet">Carnet <span id="carnet-count"></span></button>
+  </nav>
+
   <div id="menu" class="menu" hidden>
     <label class="field">
       <span>Voix</span>
@@ -36,7 +41,7 @@
     <p class="hint">Astuce iPhone : les voix « Améliorée » ou « Premium » sont bien plus fluides. Réglages → Accessibilité → Lire et énoncer → Voix → Anglais, puis téléchargez-en une.</p>
   </div>
 
-  <main>
+  <main id="page-lire">
     <section class="card">
       <textarea id="src" rows="7" placeholder="Collez ici un texte en anglais…" lang="en" spellcheck="false"></textarea>
       <div class="row">
@@ -60,6 +65,7 @@
         <button class="tab is-on" data-view="pairs" role="tab">Phrase par phrase</button>
         <button class="tab" data-view="full" role="tab">Texte entier</button>
       </div>
+      <p id="idiom-hint" class="idiom-hint" hidden></p>
       <ol id="pairs" class="pairs"></ol>
       <div id="full" class="full" hidden>
         <p id="full-fr"></p>
@@ -71,8 +77,52 @@
     </section>
   </main>
 
+  <main id="page-carnet" hidden>
+    <p class="carnet-intro">Les expressions touchées s'ajoutent ici d'elles-mêmes. Pour un mot ou un groupe de mots, touchez « ☆ Ajouter au carnet » dans sa fiche. ✕ pour retirer.</p>
+    <div id="carnet-tools" class="carnet-tools">
+      <label class="check"><input id="hide-fr" type="checkbox"><span>Cacher le français (pour réviser)</span></label>
+    </div>
+    <p id="carnet-empty" class="carnet-empty">Le carnet est vide pour l'instant.</p>
+    <ol id="carnet-list" class="carnet-list"></ol>
+    <div class="row backup">
+      <button id="btn-export" class="ghost">⤴︎ Sauvegarder le carnet</button>
+      <button id="btn-import" class="ghost">⤵︎ Restaurer</button>
+      <input id="import-file" type="file" accept=".json,application/json" hidden>
+    </div>
+  </main>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop"></div>
+    <section class="sheet-panel" role="dialog" aria-label="Sens">
+      <div class="sh-top">
+        <span id="sh-kind" class="sh-kind"></span>
+        <button id="sh-close" class="icon-btn" aria-label="Fermer">✕</button>
+      </div>
+      <div class="sh-head">
+        <span id="sh-en" class="sh-en" lang="en"></span>
+        <button id="sh-say" class="say" aria-label="Réécouter">🔊</button>
+      </div>
+      <p id="sh-canon" class="sh-canon" hidden></p>
+      <div id="sh-fr" class="sh-fr" lang="fr"></div>
+      <p id="sh-note" class="sh-note" hidden></p>
+      <div id="sh-extend" class="sh-extend">
+        <span>Étendre au mot</span>
+        <button id="sh-left" class="secondary">‹ précédent</button>
+        <button id="sh-right" class="secondary">suivant ›</button>
+        <button id="sh-less" class="secondary" aria-label="Revenir au seul mot">↺</button>
+      </div>
+      <button id="sh-save" class="primary wide"></button>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" hidden>
+    <span id="toast-msg"></span>
+    <button id="toast-undo" class="ghost">Annuler</button>
+  </div>
+
   <footer class="foot">Version <span id="version"></span></footer>
 
+  <script src="idioms.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

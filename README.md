@@ -1,4 +1,4 @@
-# Lire l'anglais — version 1.2
+# Lire l'anglais — version 2.0
 
 Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en français.
 
@@ -11,8 +11,18 @@ Coller un texte en anglais, l'écouter lu avec fluidité, puis le lire en franç
   - *Phrase par phrase* : chaque phrase anglaise avec sa traduction dessous et
     son propre bouton 🔊 pour la réécouter seule.
   - *Texte entier* : la traduction d'un bloc, à copier ou à écouter en français.
-- **Toucher un mot** : il est relu seul, plus lentement. Les phrases
-  s'affichent dès qu'on appuie sur Écouter, même sans traduire.
+- **Toucher un mot** : il est relu seul, plus lentement, et une fiche donne
+  son sens en français (traduction principale, puis les sens par nature :
+  nom, verbe…). « ‹ précédent / suivant › » étend la sélection aux mots
+  voisins pour un groupe de mots. « ☆ Ajouter au carnet » le garde.
+- **Expressions idiomatiques** : environ 220 expressions courantes sont
+  reconnues, même conjuguées (*broke the ice*, *spilled the beans*…), et
+  soulignées en pointillé orange. Les toucher affiche leur sens et les ajoute
+  au carnet ; le soulignement devient alors plein. Liste dans `idioms.js`.
+- **Onglet Carnet** : tout ce que vous avez gardé, avec la phrase d'origine.
+  🔊 pour réécouter, ✕ pour retirer (avec « Annuler »). « Cacher le français »
+  floute les traductions pour réviser : touchez une fiche pour la dévoiler.
+  « Sauvegarder le carnet » crée un fichier .json, « Restaurer » le relit.
 - **Menu ⋯** : choix de la voix anglaise, vitesse, petite pause entre les phrases.
   Les réglages et le dernier texte sont gardés sur le téléphone.
 
@@ -29,7 +39,7 @@ traduire — la lecture à voix haute, elle, marche hors ligne.
 
 ## Mettre en ligne
 
-Nouveau dépôt GitHub, les huit fichiers à la racine, puis sur Vercel :
+Nouveau dépôt GitHub, les neuf fichiers à la racine, puis sur Vercel :
 *Add New → Project*, importez le dépôt, ne remplissez aucun champ, Deploy.
 Ouvrez l'adresse sur le téléphone, Partager → Sur l'écran d'accueil.
 L'icône est violette avec « En » et des ondes jaunes.

@@ -1,6 +1,6 @@
 // Garde l'appli disponible hors ligne. Changer CACHE à chaque nouvelle version.
-const CACHE = 'lire-anglais-v1.2';
-const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'lire-anglais-v2.0';
+const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'idioms.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
